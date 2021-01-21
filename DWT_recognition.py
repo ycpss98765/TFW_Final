@@ -3,6 +3,7 @@ import numpy as np
 import cv2 as cv
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 import pywt
+import timeit
 
 
 def readinput(train_data_number, number_per_person):
@@ -19,7 +20,7 @@ def readinput(train_data_number, number_per_person):
         train_data[i]=(cv.imread(train_path_list[i], cv.IMREAD_GRAYSCALE))
 
 
-    train_label = np.array([0, 0, 1, 1, 2, 2])
+    train_label = np.array([1, 1, 2, 2, 3, 3])
     return train_data, train_label
 
 
@@ -77,14 +78,43 @@ print("The predicted label are: \n", predict_label)
 print("The predicted probability for each label: \n", predict_prob)
 print("Accuracy: \n", Accuracy)
 
+"""
+"""
+plt.figure()
+plt.subplot(231)
+plt.imshow(train_data[0])
+plt.subplot(234)
+plt.imshow(train_data[1])
+plt.subplot(232)
+plt.imshow(train_data[2])
+plt.subplot(235)
+plt.imshow(train_data[3])
+plt.subplot(233)
+plt.imshow(train_data[4])
+plt.subplot(236)
+plt.imshow(train_data[5])
 
+clf = LinearDiscriminantAnalysis(n_components=2)
+clf.fit(train_data_vector, train_label)
+x = clf.transform(train_data_vector)
+
+plt.figure()
+plt.title("Original faces with LDA to 2D-features")
+plt.xlabel("feature_1")
+plt.ylabel("feature_2")
+
+plt.scatter(x[:2, 0], x[:2, 1], s = 200, label="person_1")
+plt.scatter(x[2:4, 0], x[2:4, 1], s = 200, label="person_2")
+plt.scatter(x[4:6, 0], x[4:6, 1], s = 200, label="person_3")
+plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 
 """
 Here is the result with DWT transfrom
 """
 
 print("\n-----Not using WDT transform-----")
-train_data_LL = DWT(train_data, transform_num = 4)
+start = timeit.default_timer()
+train_data_LL = DWT(train_data, transform_num = 6)
 train_data_vector = convert2vector(train_data_LL)
 model = LDA(train_data_vector, train_label)
 predict_label, predict_prob = predict(model, train_data_vector)
@@ -92,24 +122,37 @@ Accuracy = sum(predict_label == train_label) / len(train_label)
 print("The predicted label are: \n", predict_label)
 print("The predicted probability for each label: \n", predict_prob)
 print("Accuracy: \n", Accuracy)
+stop = timeit.default_timer()
+print('Time: ', stop - start) 
+
+plt.figure()
+plt.subplot(231)
+plt.imshow(train_data_LL[0])
+plt.subplot(234)
+plt.imshow(train_data_LL[1])
+plt.subplot(232)
+plt.imshow(train_data_LL[2])
+plt.subplot(235)
+plt.imshow(train_data_LL[3])
+plt.subplot(233)
+plt.imshow(train_data_LL[4])
+plt.subplot(236)
+plt.imshow(train_data_LL[5])
 
 
 
-
-
-from sklearn.decomposition import PCA
-
-#pca = PCA(n_components=2)
-#pca.fit(train_data_vector)
-#x = pca.transform(train_data_vector)
 
 clf = LinearDiscriminantAnalysis(n_components=2)
 clf.fit(train_data_vector, train_label)
 x = clf.transform(train_data_vector)
 
-plt.title("Waveletfaces with LDA to 2D-features")
+plt.figure()
+plt.title("Original faces with LDA to 2D-features")
 plt.xlabel("feature_1")
 plt.ylabel("feature_2")
-plt.scatter(x[:2, 0], x[:2, 1])
-plt.scatter(x[2:4, 0], x[2:4, 1])
-plt.scatter(x[4:6, 0], x[4:6, 1])
+
+plt.scatter(x[:2, 0], x[:2, 1], s = 200, label="person_1")
+plt.scatter(x[2:4, 0], x[2:4, 1], s = 200, label="person_2")
+plt.scatter(x[4:6, 0], x[4:6, 1], s = 200, label="person_3")
+plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+plt.show()
